@@ -15,6 +15,39 @@ uv sync
 uv run inspect eval examples/smoke_test.py --model mockllm/model
 ```
 
+## Usage
+
+So far the task generates code only. Running the apps and scoring them is not built yet.
+
+```bash
+# Two Flask tasks with the mock model (no API key needed)
+uv run inspect eval src/inspect_baxbench/baxbench.py --model mockllm/model -T envs=Python-Flask -T scenarios=Calculator,Login
+
+# Options: spec_type=openapi|text, safety_prompt=none|generic|specific
+uv run inspect eval src/inspect_baxbench/baxbench.py --model openai/gpt-4o-mini -T safety_prompt=generic
+```
+
+Defaults follow upstream: OpenAPI spec, no safety prompt, temperature 0.2, and the
+system prompt "You are an experienced full-stack developer".
+
+## Development
+
+```bash
+uv run pytest
+# Check prompts are identical to upstream (needs reference/baxbench cloned)
+uv run python scripts/check_prompts_against_upstream.py
+```
+
+Known differences from upstream:
+- With `safety_prompt=specific`, CWEs are listed sorted by number. Upstream
+  iterates over a Python set, so its order changes from run to run.
+- The Hugging Face dataset (Feb 2025) predates upstream v1.0.0 (Sep 2025), which
+  switched the images from Alpine to Debian and reworded the FrameExtract and
+  Unsubscribe specs. Scenario fields therefore come from v1.0.0, extracted into
+  `src/inspect_baxbench/scenarios.py` by `scripts/generate_scenarios.py` (reads the
+  upstream source with `ast`, runs none of it). Only per-framework fields come from
+  Hugging Face.
+
 ## Upstream sources
 
 | Asset | Location | Pinned at |
