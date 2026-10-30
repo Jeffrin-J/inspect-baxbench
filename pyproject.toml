@@ -10,7 +10,12 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "datasets>=5.1.0",
+    "docker>=7.2.0",
+    "imageio>=2.38.1",
     "inspect-ai>=0.3.285",
+    "pdfplumber>=0.11.10",
+    "pyyaml>=6.0.3",
+    "requests>=2.34.2",
 ]
 
 [build-system]
@@ -19,10 +24,5 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "docker>=7.2.0",
-    "imageio>=2.38.1",
-    "pdfplumber>=0.11.10",
     "pytest>=9.1.1",
-    "pyyaml>=6.0.3",
-    "requests>=2.34.2",
 ]

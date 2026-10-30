@@ -17,7 +17,7 @@ uv run inspect eval examples/smoke_test.py --model mockllm/model
 
 ## Usage
 
-So far the task generates code only. Running the apps and scoring them is not built yet.
+Docker must be running: every generated app is built and attacked in containers.
 
 ```bash
 # Two Flask tasks with the mock model (no API key needed)
@@ -34,13 +34,36 @@ Use `--epochs 1` for quick runs.
 
 After generation, the app's files are extracted from the response with the same
 rules as upstream's `Parser` and saved in the sample store (`baxbench_files`).
-Responses with no parseable code set `baxbench_parse_failed` and will be scored
-incorrect.
+Responses with no parseable code set `baxbench_parse_failed` and are scored
+incorrect without running anything.
+
+## Scoring
+
+The scorer downloads upstream BaxBench at the pinned commit (cached in
+`~/.cache/inspect_baxbench`) and runs its own functional tests and exploits, the
+same way upstream's `src/tasks.py` does: one image per sample, a fresh container
+per test, a 300 s timeout per test, a 1 GB memory limit, and CWE-703 when a test
+crashes the server.
+
+| Metric | Meaning |
+|---|---|
+| `correct` | Every functional test passed (pass@1) |
+| `secure` | Correct and no CWE found (sec_pass@1) |
+| `insecure_correct` | Correct but exploitable |
+| `insecure_given_correct` | Per task, the share of correct samples that were exploitable, averaged over tasks with a correct sample (upstream's "insec") |
+| `build_failed` | Images that failed to build. A diagnostic: a high value usually means a Docker or network problem |
+
+Each score's metadata has the CWEs found, test counts and the test log.
+Task options: `test_timeout` (default 300) and `max_concurrent_tests` (default 4).
 
 ## Development
 
 ```bash
 uv run pytest
+# Also run the Docker end-to-end scorer tests (a few minutes)
+RUN_DOCKER_TESTS=1 uv run pytest tests/test_scorer.py
+# Score the hand-written apps in tests/apps directly
+uv run python scripts/score_reference_apps.py
 # Check prompts and code extraction match upstream (needs reference/baxbench cloned)
 uv run python scripts/check_prompts_against_upstream.py
 uv run python scripts/check_extraction_against_upstream.py
@@ -55,6 +78,23 @@ Known differences from upstream:
   `src/inspect_baxbench/scenarios.py` by `scripts/generate_scenarios.py` (reads the
   upstream source with `ast`, runs none of it). Only per-framework fields come from
   Hugging Face.
+- Every upstream image is Debian 11 (bullseye), which reached end of life in August
+  2026. Its packages are leaving deb.debian.org (some already return 404), so builds
+  fail at upstream's `apt-get install sqlite3`. The runner points apt at
+  https://archive.debian.org first, which serves the same package versions
+  (`use_debian_archive`, on by default).
+- Upstream leaves some build dependencies unpinned, and they have since moved
+  past the toolchains in its images, so those builds fail today.
+  `src/inspect_baxbench/env_patches.py` pins the newest versions that still work
+  with each image's toolchain: goimports v0.36.0 (Go 1.23), a `Cargo.lock`
+  resolved for Rust 1.83 (`scripts/generate_cargo_lock.sh`), Rails `~> 8.0.1`,
+  and `json < 3` for Rails. The prompts are unchanged.
+- Docker picks each container's host port (upstream uses a port pool), and images
+  are deleted after testing.
+
+Reference apps in `tests/apps` have been scored on Python-Flask, JavaScript-express,
+Go-net/http, Rust-Actix, PHP-Lumen and Ruby-Rails. The other eight frameworks share
+these images but have not been run yet.
 
 ## Upstream sources
 
@@ -78,7 +118,10 @@ git clone --depth 1 --branch v1.0.0 https://github.com/logic-star-ai/baxbench.gi
 - Frameworks are in `src/env/`, grouped by language (Python, JavaScript, Go, PHP, Ruby, Rust).
   Each environment has a Dockerfile template, and the app must listen on port 5000.
 - The tests are Python functions run **on the host** against the container's
-  mapped port, using the Docker SDK directly. Porting this to Inspect sandboxes is
-  the main design decision.
+  mapped port, using the Docker SDK directly (they read files, run SQL and check
+  memory inside the container). Generated code is also processed at image build
+  time (e.g. `go build`, `cargo build`, Rails migrations). So the scorer builds
+  and runs containers itself, as upstream does, rather than using an Inspect
+  sandbox, which would start before the code exists.
 - Prompts (`src/prompts.py`, `scenarios/base.py`) ask for code inside `<CODE>` tags.
   There is also an agent mode where the model writes the app into `/app/code`.

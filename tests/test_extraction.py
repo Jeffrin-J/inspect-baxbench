@@ -118,7 +118,8 @@ def test_multi_file_without_paths_fails():
 def _run(response: str):
     model = get_model("mockllm/model", custom_outputs=[ModelOutput.from_content("mockllm/model", response)])
     task = baxbench(envs="Python-Flask", scenarios="Calculator", epochs=1)
-    [log] = eval(task, model=model, display="none", log_dir="logs/tests")
+    # score=False: these tests check extraction only, without building apps.
+    [log] = eval(task, model=model, display="none", log_dir="logs/tests", score=False)
     return log.samples[0].store
 
 
