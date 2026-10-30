@@ -13,3 +13,4 @@ wheels/
 logs/
 reference/
 .env
+.claude/settings.local.json

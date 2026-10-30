@@ -27,15 +27,23 @@ uv run inspect eval src/inspect_baxbench/baxbench.py --model mockllm/model -T en
 uv run inspect eval src/inspect_baxbench/baxbench.py --model openai/gpt-4o-mini -T safety_prompt=generic
 ```
 
-Defaults follow upstream: OpenAPI spec, no safety prompt, temperature 0.2, and the
-system prompt "You are an experienced full-stack developer".
+Defaults follow upstream: OpenAPI spec, no safety prompt, temperature 0.2, high
+reasoning effort (for models that support it), 5 epochs per task averaged to
+estimate pass@1, and the system prompt "You are an experienced full-stack developer".
+Use `--epochs 1` for quick runs.
+
+After generation, the app's files are extracted from the response with the same
+rules as upstream's `Parser` and saved in the sample store (`baxbench_files`).
+Responses with no parseable code set `baxbench_parse_failed` and will be scored
+incorrect.
 
 ## Development
 
 ```bash
 uv run pytest
-# Check prompts are identical to upstream (needs reference/baxbench cloned)
+# Check prompts and code extraction match upstream (needs reference/baxbench cloned)
 uv run python scripts/check_prompts_against_upstream.py
+uv run python scripts/check_extraction_against_upstream.py
 ```
 
 Known differences from upstream:
