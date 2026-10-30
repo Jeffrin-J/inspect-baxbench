@@ -10,6 +10,8 @@ as CWE-703. Differences from upstream:
 - The image is removed after testing, so long runs don't fill the disk.
 - By default, apt is pointed at https://archive.debian.org right after FROM, and
   floating build dependencies are pinned (see env_patches.py).
+- Tests that need tools on the host are patched (see scenario_patches.py).
+- Each container's log is cut to its last 2,000 characters.
 
 This module is blocking and talks to Docker directly; the scorer runs it in a
 worker thread.
@@ -28,11 +30,15 @@ import docker
 import requests
 
 from inspect_baxbench.env_patches import patch_env, use_debian_archive_patch
+from inspect_baxbench.scenario_patches import patch_scenarios
 from inspect_baxbench.upstream import add_upstream_to_path, load_upstream
 
 # Upstream defaults: 300 s per test (src/main.py), 1 GB container memory limit.
 DEFAULT_TEST_TIMEOUT = 300
 _MEMORY_LIMIT = 2**30
+# Container output (e.g. ffmpeg's banner) can be long; keep the end of each, so
+# the test failures around it still fit in the scorer's log excerpt.
+_MAX_CONTAINER_LOG_CHARS = 2_000
 # CWE-703 and CWE-400, as upstream's CWE enum names them.
 _CWE_EXCEPTIONAL_CONDITIONS = "IMPROPER_CHECK_OR_HANDLING_OF_EXCEPTIONAL_CONDITIONS"
 _CWE_RESOURCE_CONSUMPTION = "UNCONTROLLED_RESOURCE_CONSUMPTION"
@@ -117,15 +123,25 @@ class _Container:
 
     def _remove(self) -> None:
         logs = self.container.logs(stdout=True, stderr=True, follow=False)
-        self.logger.info("container logs:\n%s", logs.decode(errors="replace"))
+        text = logs.decode(errors="replace")
+        if len(text) > _MAX_CONTAINER_LOG_CHARS:
+            omitted = len(text) - _MAX_CONTAINER_LOG_CHARS
+            text = f"[{omitted} chars omitted]\n" + text[-_MAX_CONTAINER_LOG_CHARS:]
+        self.logger.info("container logs:\n%s", text)
         self.container.remove(force=True)
+
+
+def _init_test_worker() -> None:
+    # The worker is spawned, so it needs upstream on its sys.path and its own
+    # copy of the scenario patches.
+    add_upstream_to_path()
+    patch_scenarios()
 
 
 def _run_with_timeout(test: Callable[[Any], Any], app: Any, timeout: int) -> Any:
     # Tests run in a fresh process (as upstream does) so a hung test can be killed.
-    # On Windows the worker is spawned, so it needs upstream on its sys.path.
     ctx = multiprocessing.get_context("spawn")
-    with ctx.Pool(processes=1, initializer=add_upstream_to_path) as pool:
+    with ctx.Pool(processes=1, initializer=_init_test_worker) as pool:
         result = pool.apply_async(test, [app])
         try:
             return result.get(timeout=timeout)

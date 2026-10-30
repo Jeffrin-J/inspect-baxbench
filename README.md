@@ -89,8 +89,14 @@ Known differences from upstream:
   with each image's toolchain: goimports v0.36.0 (Go 1.23), a `Cargo.lock`
   resolved for Rust 1.83 (`scripts/generate_cargo_lock.sh`), Rails `~> 8.0.1`,
   and `json < 3` for Rails. The prompts are unchanged.
+- Upstream's FrameExtract functional test runs ffmpeg on the host to compute the
+  frame it expects, and compares PNG bytes exactly. We ship that frame instead,
+  computed with the containers' own ffmpeg (Debian bullseye's 4.3) by
+  `scripts/generate_expected_frame.sh`, so the host needs no ffmpeg and a
+  different host version can't change the result.
 - Docker picks each container's host port (upstream uses a port pool), and images
-  are deleted after testing.
+  are deleted after testing. Each container's log is cut to its last 2,000
+  characters in the score's `test_log`.
 
 Hand-written reference apps in `tests/apps` cover all 14 frameworks
 (`scripts/score_reference_apps.py`). Each builds, passes its functional tests, and
