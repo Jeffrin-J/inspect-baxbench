@@ -7,6 +7,8 @@ and checked with BaxBench's functional tests and security exploits. Docker
 must be running.
 """
 
+from typing import Final
+
 from inspect_ai import Epochs, Task, task
 from inspect_ai.model import GenerateConfig
 from inspect_ai.solver import generate, system_message
@@ -21,7 +23,7 @@ from inspect_baxbench.scorer import DEFAULT_MAX_CONCURRENT_TESTS, baxbench_score
 # temperature 0.2, and high reasoning effort for models that support it.
 DEFAULT_EPOCHS = 5
 DEFAULT_TEMPERATURE = 0.2
-DEFAULT_REASONING_EFFORT = "high"
+DEFAULT_REASONING_EFFORT: Final = "high"
 
 
 @task

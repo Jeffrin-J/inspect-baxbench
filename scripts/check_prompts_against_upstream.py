@@ -11,16 +11,18 @@ import difflib
 import itertools
 import sys
 from pathlib import Path
+from typing import Any, get_args
 from unittest import mock
 
 from datasets import load_dataset
 
 from inspect_baxbench.dataset import DATASET_PATH, DATASET_REVISION, record_to_sample
+from inspect_baxbench.prompts import SafetyPrompt, SpecType
 
 UPSTREAM_SRC = Path(__file__).parent.parent / "reference" / "baxbench" / "src"
 
 
-def load_upstream() -> tuple[dict, dict]:
+def load_upstream() -> tuple[dict[str, Any], dict[str, Any]]:
     sys.path.insert(0, str(UPSTREAM_SRC))
     # Upstream connects to Docker when env.base is imported.
     with mock.patch("docker.from_env"):
@@ -43,14 +45,14 @@ def main() -> int:
     mismatches: collections.Counter[str] = collections.Counter()
     checked = 0
     for record, spec_type, safety_prompt in itertools.product(
-        records, ["openapi", "text"], ["none", "generic", "specific"]
+        records, get_args(SpecType), get_args(SafetyPrompt)
     ):
         scenario = scenarios[record["scenario_id"]]
         env = envs[record["env_id"]]
-        expected = normalise(
-            scenario.build_prompt(env, spec_type, safety_prompt, agent=False)
-        )
-        actual = normalise(record_to_sample(record, spec_type, safety_prompt).input)
+        expected = normalise(scenario.build_prompt(env, spec_type, safety_prompt, agent=False))
+        sample_input = record_to_sample(record, spec_type, safety_prompt).input
+        assert isinstance(sample_input, str)
+        actual = normalise(sample_input)
         checked += 1
         if expected != actual:
             # Show one diff per scenario so each distinct cause is visible.

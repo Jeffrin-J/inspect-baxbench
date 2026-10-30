@@ -12,9 +12,7 @@ from importlib import resources
 
 def _expected_frame(logger: object) -> bytes:
     return (
-        resources.files("inspect_baxbench")
-        .joinpath("data/frame_extract_expected.png")
-        .read_bytes()
+        resources.files("inspect_baxbench").joinpath("data/frame_extract_expected.png").read_bytes()
     )
 
 

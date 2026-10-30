@@ -9,6 +9,7 @@ writes the v1.0.0 scenario fields out as a Python module.
 """
 
 import ast
+import contextlib
 import pprint
 from pathlib import Path
 from typing import Any
@@ -51,7 +52,7 @@ def _evaluate(node: ast.expr, constants: dict[str, Any]) -> Any:
         parts = []
         for value in node.values:
             if isinstance(value, ast.Constant):
-                parts.append(value.value)
+                parts.append(str(value.value))
             elif (
                 isinstance(value, ast.FormattedValue)
                 and value.conversion == -1
@@ -73,10 +74,9 @@ def read_scenario(path: Path) -> tuple[str, dict[str, Any]]:
             and len(node.targets) == 1
             and isinstance(node.targets[0], ast.Name)
         ):
-            try:
+            # Skip values that aren't literals, e.g. function calls.
+            with contextlib.suppress(ValueError):
                 constants[node.targets[0].id] = ast.literal_eval(node.value)
-            except ValueError:
-                pass  # not a literal, e.g. a function call
     call = next(
         node
         for node in ast.walk(tree)

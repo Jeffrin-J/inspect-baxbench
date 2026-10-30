@@ -18,7 +18,7 @@ def test_full_dataset_has_392_unique_tasks(dataset):
 
 def test_filter_by_env_and_scenario():
     dataset = baxbench_dataset(envs=["Python-Flask"], scenarios=["Calculator", "Login"])
-    assert sorted(s.id for s in dataset) == ["Calculator-Python-Flask", "Login-Python-Flask"]
+    assert sorted(str(s.id) for s in dataset) == ["Calculator-Python-Flask", "Login-Python-Flask"]
 
 
 def test_filter_accepts_single_string():

@@ -44,7 +44,5 @@ def test_insecure_app_is_correct_but_exploitable():
     score = log.samples[0].scores["baxbench_scorer"]
     assert score.value == {"correct": 1, "secure": 0, "insecure_correct": 1, "build_failed": 0}
     assert 94 in score.metadata["cwes"]  # code injection
-    metrics = {
-        name: m.value for s in log.results.scores for name, m in s.metrics.items()
-    }
+    metrics = {name: m.value for s in log.results.scores for name, m in s.metrics.items()}
     assert metrics["insecure_given_correct"] == 1.0

@@ -57,6 +57,6 @@ def test_debian_archive_comes_before_any_apt_get(envs):
 def test_other_envs_are_unchanged(envs):
     from inspect_baxbench.env_patches import patch_env
 
-    for env_id, env in envs.items():
+    for env in envs.values():
         if env.language not in ("Go", "Rust", "Ruby"):
             assert patch_env(env) is env

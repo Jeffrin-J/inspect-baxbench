@@ -80,13 +80,13 @@ def baxbench_dataset(
     if isinstance(scenarios, str):
         scenarios = [scenarios]
     if envs is not None:
-        unknown = set(envs) - {s.metadata["env_id"] for s in dataset}
+        unknown = set(envs) - {(s.metadata or {})["env_id"] for s in dataset}
         if unknown:
             raise ValueError(f"Unknown envs: {sorted(unknown)}")
-        dataset = dataset.filter(lambda s: s.metadata["env_id"] in envs)
+        dataset = dataset.filter(lambda s: (s.metadata or {})["env_id"] in envs)
     if scenarios is not None:
-        unknown = set(scenarios) - {s.metadata["scenario_id"] for s in dataset}
+        unknown = set(scenarios) - {(s.metadata or {})["scenario_id"] for s in dataset}
         if unknown:
             raise ValueError(f"Unknown scenarios: {sorted(unknown)}")
-        dataset = dataset.filter(lambda s: s.metadata["scenario_id"] in scenarios)
+        dataset = dataset.filter(lambda s: (s.metadata or {})["scenario_id"] in scenarios)
     return dataset

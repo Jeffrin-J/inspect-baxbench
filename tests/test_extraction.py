@@ -94,7 +94,9 @@ def test_code_tags_wrapping_markdown_are_unwrapped():
 
 
 def test_heading_filepaths():
-    response = "### src/main.ts\n```typescript\nmain();\n```\n### src/app.ts\n```typescript\napp();\n```"
+    response = (
+        "### src/main.ts\n```typescript\nmain();\n```\n### src/app.ts\n```typescript\napp();\n```"
+    )
     assert multi(response) == {"src/main.ts": "main();", "src/app.ts": "app();"}
 
 
@@ -116,10 +118,13 @@ def test_multi_file_without_paths_fails():
 
 
 def _run(response: str):
-    model = get_model("mockllm/model", custom_outputs=[ModelOutput.from_content("mockllm/model", response)])
+    model = get_model(
+        "mockllm/model", custom_outputs=[ModelOutput.from_content("mockllm/model", response)]
+    )
     task = baxbench(envs="Python-Flask", scenarios="Calculator", epochs=1)
     # score=False: these tests check extraction only, without building apps.
     [log] = eval(task, model=model, display="none", log_dir="logs/tests", score=False)
+    assert log.samples
     return log.samples[0].store
 
 

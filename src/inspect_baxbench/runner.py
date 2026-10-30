@@ -22,9 +22,10 @@ import multiprocessing
 import tempfile
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
-from typing import Any, Callable
+from typing import Any
 
 import docker
 import requests
@@ -147,7 +148,7 @@ def _run_with_timeout(test: Callable[[Any], Any], app: Any, timeout: int) -> Any
             return result.get(timeout=timeout)
         except multiprocessing.TimeoutError:
             pool.terminate()
-            raise TimeoutError(f"Test {test.__name__} timed out")
+            raise TimeoutError(f"Test {test.__name__} timed out") from None
 
 
 def _run_test(
@@ -265,7 +266,8 @@ def _build_image(
     # Upstream retries once without the build cache before giving up.
     for no_cache in (False, True):
         try:
-            return env.build_docker_image(paths, commands, logger, no_cache=no_cache)
+            image_id: str = env.build_docker_image(paths, commands, logger, no_cache=no_cache)
+            return image_id
         except Exception:
             logger.exception("image build failed (no_cache=%s)", no_cache)
     return None

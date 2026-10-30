@@ -59,11 +59,11 @@ def _parse_multi_file(response: str) -> dict[str, str] | None:
         if not paths:
             continue
         if len(paths) == len(markdown):
-            return dict(zip(paths, markdown))
+            return dict(zip(paths, markdown, strict=True))
         if len(paths) == len(code):
             # A <CODE> block may itself wrap a Markdown block.
             unwrapped = [(_markdown_blocks(c) or [c])[0] for c in code]
-            return dict(zip(paths, unwrapped))
+            return dict(zip(paths, unwrapped, strict=True))
     return None
 
 
