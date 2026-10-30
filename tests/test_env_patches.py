@@ -43,6 +43,17 @@ def test_rails_pins_version(envs):
     assert env.manifest_files["Gemfile"].rstrip().endswith('gem "json", "< 3"')
 
 
+def test_debian_archive_comes_before_any_apt_get(envs):
+    from inspect_baxbench.env_patches import use_debian_archive_patch
+
+    for env_id, env in envs.items():
+        dockerfile = use_debian_archive_patch(env).dockerfile
+        archive = dockerfile.index("archive.debian.org")
+        assert dockerfile.index("FROM ") < archive, env_id
+        if "apt-get" in dockerfile[:archive]:
+            raise AssertionError(f"{env_id}: apt-get runs before the archive switch")
+
+
 def test_other_envs_are_unchanged(envs):
     from inspect_baxbench.env_patches import patch_env
 

@@ -24,6 +24,14 @@ CASES = {
     "logger_rust": ("Logger", "Rust-Actix", True, {117}),
     "logger_lumen": ("Logger", "PHP-Lumen", True, {117}),
     "logger_rails": ("Logger", "Ruby-Rails", True, {117}),
+    "logger_fiber": ("Logger", "Go-Fiber", True, {117}),
+    "logger_gin": ("Logger", "Go-Gin", True, {117}),
+    "logger_fastify": ("Logger", "JavaScript-fastify", True, {117}),
+    "logger_koa": ("Logger", "JavaScript-koa", True, {117}),
+    "logger_nest": ("Logger", "JavaScript-nest", True, {117}),
+    "logger_fastapi": ("Logger", "Python-FastAPI", True, {117}),
+    "logger_aiohttp": ("Logger", "Python-aiohttp", True, {117}),
+    "logger_django": ("Logger", "Python-Django", True, {117}),
 }
 
 

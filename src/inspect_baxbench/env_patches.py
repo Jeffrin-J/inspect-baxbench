@@ -23,8 +23,22 @@ noticed instead of silently skipped.
 """
 
 import dataclasses
+import re
 from importlib import resources
 from typing import Any
+
+# Every upstream image is Debian 11 (bullseye), which reached end of life in
+# August 2026. Its packages are leaving deb.debian.org (some already return
+# 404), and some networks block plain HTTP to Debian's mirrors. This points apt
+# at https://archive.debian.org, which serves the same packages and versions.
+_DEBIAN_ARCHIVE_COMMAND = (
+    "RUN sed -i -e 's|http://deb.debian.org|https://archive.debian.org|g' "
+    "-e 's|http://security.debian.org|https://archive.debian.org|g' "
+    "/etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null; "
+    # Archived release files are past their Valid-Until date.
+    "echo 'Acquire::Check-Valid-Until \"false\";' > /etc/apt/apt.conf.d/99baxbench-archive"
+)
+_FROM_LINE = re.compile(r"^FROM [^\n]+\n", re.MULTILINE)
 
 _GO_PIN = (
     "RUN go install golang.org/x/tools/cmd/goimports@latest",
@@ -38,6 +52,20 @@ def _replace(dockerfile: str, old: str, new: str, env_id: str) -> str:
     if old not in dockerfile:
         raise RuntimeError(f"Upstream Dockerfile for {env_id} changed: {old!r} not found")
     return dockerfile.replace(old, new)
+
+
+def use_debian_archive_patch(env: Any) -> Any:
+    """Return the Env with apt switched to the Debian archive right after FROM.
+
+    It goes before every other instruction because some Dockerfiles (e.g.
+    JavaScript-nest) run apt-get before the slot for extra build commands.
+    """
+    match = _FROM_LINE.search(env.dockerfile)
+    if match is None or len(_FROM_LINE.findall(env.dockerfile)) != 1:
+        raise RuntimeError(f"Expected one FROM line in the Dockerfile for {env.id}")
+    end = match.end()
+    dockerfile = env.dockerfile[:end] + _DEBIAN_ARCHIVE_COMMAND + "\n" + env.dockerfile[end:]
+    return dataclasses.replace(env, dockerfile=dockerfile)
 
 
 def patch_env(env: Any) -> Any:

@@ -80,9 +80,9 @@ Known differences from upstream:
   Hugging Face.
 - Every upstream image is Debian 11 (bullseye), which reached end of life in August
   2026. Its packages are leaving deb.debian.org (some already return 404), so builds
-  fail at upstream's `apt-get install sqlite3`. The runner points apt at
-  https://archive.debian.org first, which serves the same package versions
-  (`use_debian_archive`, on by default).
+  fail at upstream's `apt-get install sqlite3`. A line inserted right after each
+  Dockerfile's `FROM` points apt at https://archive.debian.org, which serves the
+  same package versions (`use_debian_archive`, on by default).
 - Upstream leaves some build dependencies unpinned, and they have since moved
   past the toolchains in its images, so those builds fail today.
   `src/inspect_baxbench/env_patches.py` pins the newest versions that still work
@@ -92,9 +92,10 @@ Known differences from upstream:
 - Docker picks each container's host port (upstream uses a port pool), and images
   are deleted after testing.
 
-Reference apps in `tests/apps` have been scored on Python-Flask, JavaScript-express,
-Go-net/http, Rust-Actix, PHP-Lumen and Ruby-Rails. The other eight frameworks share
-these images but have not been run yet.
+Hand-written reference apps in `tests/apps` cover all 14 frameworks
+(`scripts/score_reference_apps.py`). Each builds, passes its functional tests, and
+has the expected CWEs found: a secure and an `eval()`-based Calculator on Flask,
+and a Logger with log injection (CWE-117) on every framework.
 
 ## Upstream sources
 

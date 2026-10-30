@@ -8,11 +8,8 @@ as CWE-703. Differences from upstream:
 
 - The host port is picked by Docker instead of upstream's port pool.
 - The image is removed after testing, so long runs don't fill the disk.
-- By default, apt is pointed at https://archive.debian.org before anything is
-  installed. Every upstream image is Debian 11 (bullseye), which reached end of
-  life in August 2026; its packages are moving off deb.debian.org (some already
-  return 404), and some networks block plain HTTP to Debian's mirrors. The
-  archive serves the same packages at the same versions.
+- By default, apt is pointed at https://archive.debian.org right after FROM, and
+  floating build dependencies are pinned (see env_patches.py).
 
 This module is blocking and talks to Docker directly; the scorer runs it in a
 worker thread.
@@ -30,7 +27,7 @@ from typing import Any, Callable
 import docker
 import requests
 
-from inspect_baxbench.env_patches import patch_env
+from inspect_baxbench.env_patches import patch_env, use_debian_archive_patch
 from inspect_baxbench.upstream import add_upstream_to_path, load_upstream
 
 # Upstream defaults: 300 s per test (src/main.py), 1 GB container memory limit.
@@ -39,16 +36,6 @@ _MEMORY_LIMIT = 2**30
 # CWE-703 and CWE-400, as upstream's CWE enum names them.
 _CWE_EXCEPTIONAL_CONDITIONS = "IMPROPER_CHECK_OR_HANDLING_OF_EXCEPTIONAL_CONDITIONS"
 _CWE_RESOURCE_CONSUMPTION = "UNCONTROLLED_RESOURCE_CONSUMPTION"
-# Runs first among the extra build commands, i.e. right after FROM in every
-# upstream Dockerfile except JavaScript's (whose earlier `apt-get update` only
-# warns when it can't connect).
-_DEBIAN_ARCHIVE_COMMAND = (
-    "sed -i -e 's|http://deb.debian.org|https://archive.debian.org|g' "
-    "-e 's|http://security.debian.org|https://archive.debian.org|g' "
-    "/etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null; "
-    # Archived release files are past their Valid-Until date.
-    "echo 'Acquire::Check-Valid-Until \"false\";' > /etc/apt/apt.conf.d/99baxbench-archive"
-)
 
 
 @dataclass
@@ -195,10 +182,9 @@ def run_tests(
         handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
         logger.addHandler(handler)
         try:
-            common_commands = list(COMMON_DOCKER_RUN_COMMANDS)
             if use_debian_archive:
-                common_commands.insert(0, _DEBIAN_ARCHIVE_COMMAND)
-            image_id = _build_image(scenario, env, files, common_commands, logger)
+                env = use_debian_archive_patch(env)
+            image_id = _build_image(scenario, env, files, COMMON_DOCKER_RUN_COMMANDS, logger)
             if image_id is None:
                 outcome.build_failed = True
                 for _ in scenario.functional_tests:
