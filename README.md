@@ -140,6 +140,13 @@ its figures by [extract_paper_results.py](scripts/extract_paper_results.py), int
   (Debian bullseye's 4.3) by
   [generate_expected_frame.sh](scripts/generate_expected_frame.sh), so the host
   needs no ffmpeg and a different host version can't change the result.
+- **Database copies on Windows.** Tests that check how passwords are stored copy
+  the app's SQLite file into a temporary directory on the host. On Windows,
+  deleting it fails while the file is still open (upstream doesn't close its
+  sqlite3 connections, and virus scanners open new files), and the test then
+  raises without reporting a CWE. We retry the deletion
+  ([scenario_patches.py](src/inspect_baxbench/scenario_patches.py)); what the
+  tests check is unchanged.
 - **Scenario text from v1.0.0.** The Hugging Face dataset (Feb 2025) predates
   upstream v1.0.0 (Sep 2025), which switched the images from Alpine to Debian and
   reworded the FrameExtract and Unsubscribe specs. Scenario fields therefore come

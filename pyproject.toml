@@ -51,7 +51,7 @@ mypy_path = "src"
 explicit_package_bases = true
 # Upstream BaxBench is imported by top-level name at run time (see upstream.py).
 [[tool.mypy.overrides]]
-module = ["cwes", "env", "env.*", "prompts", "scenarios", "scenarios.*", "docker", "docker.*", "datasets"]
+module = ["cwes", "env", "env.*", "exploits", "prompts", "scenarios", "scenarios.*", "docker", "docker.*", "datasets"]
 ignore_missing_imports = true
 
 # Test functions need no annotations.
