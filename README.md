@@ -97,11 +97,22 @@ reminder), compared with the paper's published numbers (arXiv v3, Figure 3):
 | Model | Correct (ours) | Correct (paper) | Secure (ours) | Secure (paper) |
 |---|---|---|---|---|
 | DeepSeek V3 (`openrouter/deepseek/deepseek-chat`) | 39.5% ± 4.8 | 40.3% | 21.2% ± 4.0 | 19.4% |
+| Llama 3.3 70B (`openrouter/meta-llama/llama-3.3-70b-instruct`) | 17.6% ± 3.8 | 22.0% | 9.7% ± 2.9 | 9.2% |
 
-± is a 95% confidence half-width. Per-framework results, all 14 within their
-confidence intervals of the paper's: [docs/results/deepseek-v3.md](docs/results/deepseek-v3.md).
+± is a 95% confidence half-width. Per-framework results:
+[DeepSeek V3](docs/results/deepseek-v3.md) (all 14 frameworks within their
+intervals of the paper's) and [Llama 3.3 70B](docs/results/llama-3.3-70b.md)
+(12 of 14, with Go-Gin and Flask lower).
 
-Run on 30-31 Oct 2026 with Inspect 0.3.285, 1 epoch at temperature 0.2. The paper
+Security matches the paper for both models. Llama's correctness is 4.4 points below
+the paper's, just outside the interval. The paper served Llama from Together's
+FP8 "Turbo" endpoint, which OpenRouter doesn't offer; our requests went to 8
+providers with different quantisations (bf16, fp8 and fp16). Among the four that
+served at least 30 requests, correct rates ranged from 10% to 27%. Every failure we inspected was the model's own: syntax
+errors, modules that aren't installed (e.g. `import pyjwt`), and aiohttp servers
+that exit as soon as they start.
+
+Runs on 30-31 Oct 2026 with Inspect 0.3.285, 1 epoch at temperature 0.2. The paper
 used 10 samples at temperature 0.4 (its README's commands) where upstream's code
 defaults to 5 samples at 0.2, which we follow; the hosted model may also not be
 the paper's exact checkpoint. The paper's numbers are read from the bar heights of
