@@ -46,3 +46,33 @@ def test_insecure_app_is_correct_but_exploitable():
     assert 94 in score.metadata["cwes"]  # code injection
     metrics = {name: m.value for s in log.results.scores for name, m in s.metrics.items()}
     assert metrics["insecure_given_correct"] == 1.0
+
+
+def _build_images() -> list[str]:
+    import docker
+
+    return [
+        i.id for i in docker.from_env().images.list(all=True, filters={"label": "baxbench.build"})
+    ]
+
+
+def test_builds_leave_no_images_behind():
+    from concurrent.futures import ThreadPoolExecutor
+
+    from inspect_baxbench.runner import run_tests
+
+    code = (APPS / "calculator_flask_secure" / "app.py").read_text()
+    apps = [
+        {"app.py": code + "\n# sample 1\n"},
+        {"app.py": code + "\n# sample 2\n"},
+        {"app.py": "import flask\n"},  # builds, but the server never starts
+    ]
+    before = set(_build_images())
+    # Concurrent builds of one framework, as in a real run, used to leak the
+    # intermediate images they shared.
+    with ThreadPoolExecutor(len(apps)) as pool:
+        outcomes = list(
+            pool.map(lambda files: run_tests("Calculator", "Python-Flask", files), apps)
+        )
+    assert [o.functionally_correct for o in outcomes[:2]] == [True, True]
+    assert set(_build_images()) - before == set()

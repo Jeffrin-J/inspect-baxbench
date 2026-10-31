@@ -7,7 +7,8 @@ subprocess with a timeout, and treat a server process that dies during a test
 as CWE-703. Differences from upstream:
 
 - The host port is picked by Docker instead of upstream's port pool.
-- The image is removed after testing, so long runs don't fill the disk.
+- Each build is labelled uniquely, and every image it created, intermediate
+  ones included, is removed after testing, so long runs don't fill the disk.
 - By default, apt is pointed at https://archive.debian.org right after FROM, and
   floating build dependencies are pinned (see env_patches.py).
 - Tests that need tools on the host are patched (see scenario_patches.py).
@@ -30,7 +31,7 @@ from typing import Any
 import docker
 import requests
 
-from inspect_baxbench.env_patches import patch_env, use_debian_archive_patch
+from inspect_baxbench.env_patches import label_build_patch, patch_env, use_debian_archive_patch
 from inspect_baxbench.scenario_patches import patch_scenarios
 from inspect_baxbench.upstream import add_upstream_to_path, load_upstream
 
@@ -46,6 +47,8 @@ _CONTAINER_LOG_TAIL_CHARS = 1_000
 # CWE-703 and CWE-400, as upstream's CWE enum names them.
 _CWE_EXCEPTIONAL_CONDITIONS = "IMPROPER_CHECK_OR_HANDLING_OF_EXCEPTIONAL_CONDITIONS"
 _CWE_RESOURCE_CONSUMPTION = "UNCONTROLLED_RESOURCE_CONSUMPTION"
+# Label on every image a build creates, with a value unique to the build.
+_BUILD_LABEL = "baxbench.build"
 
 
 @dataclass
@@ -212,9 +215,11 @@ def run_tests(
         handler = logging.FileHandler(log_dir / "test.log", encoding="utf-8")
         handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
         logger.addHandler(handler)
+        build_id = uuid.uuid4().hex
         try:
             if use_debian_archive:
                 env = use_debian_archive_patch(env)
+            env = label_build_patch(env, _BUILD_LABEL, build_id)
             image_id = _build_image(scenario, env, files, COMMON_DOCKER_RUN_COMMANDS, logger)
             if image_id is None:
                 outcome.build_failed = True
@@ -224,42 +229,56 @@ def run_tests(
                     outcome.record_st(None)
                 return outcome
 
-            try:
-                for test in scenario.functional_tests:
-                    passed, had_exception = False, False
-                    try:
-                        passed, crashed = _run_test(test, env, image_id, log_dir, timeout, logger)
-                        if crashed:
-                            logger.warning("server crashed during functional test")
-                            outcome.record_st({CWE[_CWE_EXCEPTIONAL_CONDITIONS]})
-                    except Exception:
-                        logger.exception("functional test %s raised", test.__name__)
-                        had_exception = True
-                    outcome.record_ft(passed=bool(passed), had_exception=had_exception)
-
-                for test in scenario.security_tests:
-                    cwes = None
-                    try:
-                        cwes, crashed = _run_test(test, env, image_id, log_dir, timeout, logger)
-                        if crashed:
-                            logger.warning("server crashed during security test")
-                            cwes = set(cwes or ())
-                            # Upstream adds 703 unless resource exhaustion caused the crash.
-                            if CWE[_CWE_RESOURCE_CONSUMPTION] not in cwes:
-                                cwes.add(CWE[_CWE_EXCEPTIONAL_CONDITIONS])
-                    except Exception:
-                        logger.exception("security test %s raised", test.__name__)
-                    outcome.record_st(cwes)
-            finally:
+            for test in scenario.functional_tests:
+                passed, had_exception = False, False
                 try:
-                    docker.from_env().images.remove(image_id, force=True)
-                except docker.errors.APIError:
-                    logger.warning("could not remove image %s", image_id)
+                    passed, crashed = _run_test(test, env, image_id, log_dir, timeout, logger)
+                    if crashed:
+                        logger.warning("server crashed during functional test")
+                        outcome.record_st({CWE[_CWE_EXCEPTIONAL_CONDITIONS]})
+                except Exception:
+                    logger.exception("functional test %s raised", test.__name__)
+                    had_exception = True
+                outcome.record_ft(passed=bool(passed), had_exception=had_exception)
+
+            for test in scenario.security_tests:
+                cwes = None
+                try:
+                    cwes, crashed = _run_test(test, env, image_id, log_dir, timeout, logger)
+                    if crashed:
+                        logger.warning("server crashed during security test")
+                        cwes = set(cwes or ())
+                        # Upstream adds 703 unless resource exhaustion caused the crash.
+                        if CWE[_CWE_RESOURCE_CONSUMPTION] not in cwes:
+                            cwes.add(CWE[_CWE_EXCEPTIONAL_CONDITIONS])
+                except Exception:
+                    logger.exception("security test %s raised", test.__name__)
+                outcome.record_st(cwes)
         finally:
+            _remove_build_images(build_id, logger)
             handler.close()
             logger.removeHandler(handler)
             outcome.log = _read_logs(log_dir)
     return outcome
+
+
+def _remove_build_images(build_id: str, logger: logging.Logger) -> None:
+    """Remove every image one build created, the final and intermediate ones,
+    including after a failed build."""
+    try:
+        client = docker.from_env()
+        images = client.images.list(all=True, filters={"label": f"{_BUILD_LABEL}={build_id}"})
+    except docker.errors.DockerException:
+        logger.exception("could not list the images of build %s", build_id)
+        return
+    # Children before parents.
+    for image in sorted(images, key=lambda i: i.attrs.get("Created", ""), reverse=True):
+        try:
+            client.images.remove(image.id, force=True)
+        except docker.errors.NotFound:
+            pass  # removed along with a child
+        except docker.errors.APIError:
+            logger.warning("could not remove image %s", image.id)
 
 
 def _build_image(

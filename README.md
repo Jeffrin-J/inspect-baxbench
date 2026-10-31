@@ -157,7 +157,10 @@ its figures by [extract_paper_results.py](scripts/extract_paper_results.py), int
 - **CWE order.** With `safety_prompt=specific`, CWEs are listed sorted by number.
   Upstream iterates over a Python set, so its order changes from run to run.
 - **Housekeeping.** Docker picks each container's host port (upstream uses a port
-  pool), images are deleted after testing, and each container's log is cut to its
+  pool). Each build gets a unique `LABEL` right after `FROM`, so concurrent builds
+  share no layers, and every image it created, intermediate ones included, is
+  deleted after testing (removing only the final image leaked about 50 GB of
+  intermediate images per full run). Each container's log is cut to its
   first and last 1,000 characters in the score's log excerpt.
 
 ## Development

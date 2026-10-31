@@ -54,18 +54,32 @@ def _replace(dockerfile: str, old: str, new: str, env_id: str) -> str:
     return dockerfile.replace(old, new)
 
 
+def _insert_after_from(env: Any, line: str) -> Any:
+    match = _FROM_LINE.search(env.dockerfile)
+    if match is None or len(_FROM_LINE.findall(env.dockerfile)) != 1:
+        raise RuntimeError(f"Expected one FROM line in the Dockerfile for {env.id}")
+    end = match.end()
+    dockerfile = env.dockerfile[:end] + line + "\n" + env.dockerfile[end:]
+    return dataclasses.replace(env, dockerfile=dockerfile)
+
+
 def use_debian_archive_patch(env: Any) -> Any:
     """Return the Env with apt switched to the Debian archive right after FROM.
 
     It goes before every other instruction because some Dockerfiles (e.g.
     JavaScript-nest) run apt-get before the slot for extra build commands.
     """
-    match = _FROM_LINE.search(env.dockerfile)
-    if match is None or len(_FROM_LINE.findall(env.dockerfile)) != 1:
-        raise RuntimeError(f"Expected one FROM line in the Dockerfile for {env.id}")
-    end = match.end()
-    dockerfile = env.dockerfile[:end] + _DEBIAN_ARCHIVE_COMMAND + "\n" + env.dockerfile[end:]
-    return dataclasses.replace(env, dockerfile=dockerfile)
+    return _insert_after_from(env, _DEBIAN_ARCHIVE_COMMAND)
+
+
+def label_build_patch(env: Any, label: str, value: str) -> Any:
+    """Return the Env with a LABEL right after FROM.
+
+    With a unique value, the build shares no layers with builds running at the
+    same time, and every image it creates, intermediate ones included, carries
+    the label, so they can all be found and removed afterwards.
+    """
+    return _insert_after_from(env, f"LABEL {label}={value}")
 
 
 def patch_env(env: Any) -> Any:
