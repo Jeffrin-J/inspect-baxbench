@@ -124,7 +124,7 @@ Coming soon: results for two models, compared with the paper.
   Upstream iterates over a Python set, so its order changes from run to run.
 - **Housekeeping.** Docker picks each container's host port (upstream uses a port
   pool), images are deleted after testing, and each container's log is cut to its
-  last 2,000 characters in the score's log excerpt.
+  first and last 1,000 characters in the score's log excerpt.
 
 ## Development
 

@@ -11,7 +11,7 @@ as CWE-703. Differences from upstream:
 - By default, apt is pointed at https://archive.debian.org right after FROM, and
   floating build dependencies are pinned (see env_patches.py).
 - Tests that need tools on the host are patched (see scenario_patches.py).
-- Each container's log is cut to its last 2,000 characters.
+- Each container's log is cut to its first and last 1,000 characters.
 
 This module is blocking and talks to Docker directly; the scorer runs it in a
 worker thread.
@@ -37,9 +37,12 @@ from inspect_baxbench.upstream import add_upstream_to_path, load_upstream
 # Upstream defaults: 300 s per test (src/main.py), 1 GB container memory limit.
 DEFAULT_TEST_TIMEOUT = 300
 _MEMORY_LIMIT = 2**30
-# Container output (e.g. ffmpeg's banner) can be long; keep the end of each, so
-# the test failures around it still fit in the scorer's log excerpt.
-_MAX_CONTAINER_LOG_CHARS = 2_000
+# Container output (e.g. ffmpeg's banner) can be long; keep the start and end of
+# each, so the test failures around it still fit in the scorer's log excerpt.
+# Both ends matter: Ruby prints the error before its stack trace, Rust after the
+# compiler output.
+_CONTAINER_LOG_HEAD_CHARS = 1_000
+_CONTAINER_LOG_TAIL_CHARS = 1_000
 # CWE-703 and CWE-400, as upstream's CWE enum names them.
 _CWE_EXCEPTIONAL_CONDITIONS = "IMPROPER_CHECK_OR_HANDLING_OF_EXCEPTIONAL_CONDITIONS"
 _CWE_RESOURCE_CONSUMPTION = "UNCONTROLLED_RESOURCE_CONSUMPTION"
@@ -99,7 +102,13 @@ class _Container:
         )
         try:
             self.container.reload()
-            self.port = int(self.container.ports[f"{self.env.port}/tcp"][0]["HostPort"])
+            # Docker drops the port mapping once the container stops, e.g. when
+            # the app exits on startup. Upstream times out waiting in that case;
+            # either way the test fails.
+            bindings = self.container.ports.get(f"{self.env.port}/tcp")
+            if not bindings:
+                raise RuntimeError(f"App exited on startup (status {self.container.status})")
+            self.port = int(bindings[0]["HostPort"])
             self._wait_for_server()
         except BaseException:
             self._remove()
@@ -125,9 +134,14 @@ class _Container:
     def _remove(self) -> None:
         logs = self.container.logs(stdout=True, stderr=True, follow=False)
         text = logs.decode(errors="replace")
-        if len(text) > _MAX_CONTAINER_LOG_CHARS:
-            omitted = len(text) - _MAX_CONTAINER_LOG_CHARS
-            text = f"[{omitted} chars omitted]\n" + text[-_MAX_CONTAINER_LOG_CHARS:]
+        keep = _CONTAINER_LOG_HEAD_CHARS + _CONTAINER_LOG_TAIL_CHARS
+        if len(text) > keep:
+            omitted = len(text) - keep
+            text = (
+                text[:_CONTAINER_LOG_HEAD_CHARS]
+                + f"\n[{omitted} chars omitted]\n"
+                + text[-_CONTAINER_LOG_TAIL_CHARS:]
+            )
         self.logger.info("container logs:\n%s", text)
         self.container.remove(force=True)
 
