@@ -1,0 +1,702 @@
+{
+  "source": "https://arxiv.org/e-print/2502.11844v3",
+  "setting": "OpenAPI spec, no security reminder",
+  "sampling": "10 samples per task at temperature 0.4; 1 sample for o1, o3-mini and R1",
+  "overall": [
+    {
+      "model": "OpenAI o3-mini",
+      "correct": 61.2,
+      "secure": 37.0
+    },
+    {
+      "model": "DeepSeek R1",
+      "correct": 55.6,
+      "secure": 34.9
+    },
+    {
+      "model": "Claude 3.5 Sonnet",
+      "correct": 56.2,
+      "secure": 34.1
+    },
+    {
+      "model": "OpenAI o1",
+      "correct": 62.2,
+      "secure": 31.1
+    },
+    {
+      "model": "GPT-4o",
+      "correct": 44.5,
+      "secure": 22.1
+    },
+    {
+      "model": "DeepSeek V3",
+      "correct": 40.3,
+      "secure": 19.4
+    },
+    {
+      "model": "Codestral",
+      "correct": 28.4,
+      "secure": 13.6
+    },
+    {
+      "model": "Qwen2.5 Coder",
+      "correct": 25.1,
+      "secure": 11.5
+    },
+    {
+      "model": "Llama 3.3 70B",
+      "correct": 22.0,
+      "secure": 9.2
+    },
+    {
+      "model": "Qwen2.5 72B",
+      "correct": 19.6,
+      "secure": 8.8
+    },
+    {
+      "model": "Qwen2.5 7B",
+      "correct": 5.5,
+      "secure": 2.2
+    }
+  ],
+  "per_framework": {
+    "OpenAI o3-mini": {
+      "Python-aiohttp": {
+        "correct": 78.6,
+        "secure": 42.9
+      },
+      "Go-Fiber": {
+        "correct": 71.4,
+        "secure": 46.4
+      },
+      "Go-net/http": {
+        "correct": 67.9,
+        "secure": 46.4
+      },
+      "Go-Gin": {
+        "correct": 75.0,
+        "secure": 46.4
+      },
+      "Python-FastAPI": {
+        "correct": 78.6,
+        "secure": 42.9
+      },
+      "JavaScript-express": {
+        "correct": 78.6,
+        "secure": 46.4
+      },
+      "JavaScript-koa": {
+        "correct": 89.3,
+        "secure": 42.9
+      },
+      "JavaScript-fastify": {
+        "correct": 53.6,
+        "secure": 35.7
+      },
+      "Python-Flask": {
+        "correct": 71.4,
+        "secure": 50.0
+      },
+      "Ruby-Rails": {
+        "correct": 42.9,
+        "secure": 35.7
+      },
+      "Python-Django": {
+        "correct": 75.0,
+        "secure": 39.3
+      },
+      "JavaScript-nest": {
+        "correct": 35.7,
+        "secure": 17.9
+      },
+      "Rust-Actix": {
+        "correct": 17.9,
+        "secure": 10.7
+      },
+      "PHP-Lumen": {
+        "correct": 21.4,
+        "secure": 14.3
+      }
+    },
+    "DeepSeek R1": {
+      "Python-aiohttp": {
+        "correct": 67.9,
+        "secure": 42.9
+      },
+      "Go-Fiber": {
+        "correct": 67.9,
+        "secure": 50.0
+      },
+      "Go-net/http": {
+        "correct": 71.4,
+        "secure": 46.4
+      },
+      "Go-Gin": {
+        "correct": 64.3,
+        "secure": 35.7
+      },
+      "Python-FastAPI": {
+        "correct": 64.3,
+        "secure": 39.3
+      },
+      "JavaScript-express": {
+        "correct": 71.4,
+        "secure": 46.4
+      },
+      "JavaScript-koa": {
+        "correct": 67.9,
+        "secure": 39.3
+      },
+      "JavaScript-fastify": {
+        "correct": 71.4,
+        "secure": 46.4
+      },
+      "Python-Flask": {
+        "correct": 85.7,
+        "secure": 57.1
+      },
+      "Ruby-Rails": {
+        "correct": 7.1,
+        "secure": 7.1
+      },
+      "Python-Django": {
+        "correct": 50.0,
+        "secure": 25.0
+      },
+      "JavaScript-nest": {
+        "correct": 42.9,
+        "secure": 28.6
+      },
+      "Rust-Actix": {
+        "correct": 17.9,
+        "secure": 3.6
+      },
+      "PHP-Lumen": {
+        "correct": 28.6,
+        "secure": 21.4
+      }
+    },
+    "Claude 3.5 Sonnet": {
+      "Python-aiohttp": {
+        "correct": 78.6,
+        "secure": 43.2
+      },
+      "Go-Fiber": {
+        "correct": 53.9,
+        "secure": 34.3
+      },
+      "Go-net/http": {
+        "correct": 56.4,
+        "secure": 33.6
+      },
+      "Go-Gin": {
+        "correct": 62.9,
+        "secure": 33.6
+      },
+      "Python-FastAPI": {
+        "correct": 52.1,
+        "secure": 31.8
+      },
+      "JavaScript-express": {
+        "correct": 68.6,
+        "secure": 45.4
+      },
+      "JavaScript-koa": {
+        "correct": 58.2,
+        "secure": 38.9
+      },
+      "JavaScript-fastify": {
+        "correct": 56.4,
+        "secure": 40.4
+      },
+      "Python-Flask": {
+        "correct": 78.2,
+        "secure": 48.2
+      },
+      "Ruby-Rails": {
+        "correct": 33.6,
+        "secure": 19.6
+      },
+      "Python-Django": {
+        "correct": 73.2,
+        "secure": 46.1
+      },
+      "JavaScript-nest": {
+        "correct": 41.4,
+        "secure": 22.9
+      },
+      "Rust-Actix": {
+        "correct": 30.0,
+        "secure": 15.7
+      },
+      "PHP-Lumen": {
+        "correct": 43.2,
+        "secure": 23.9
+      }
+    },
+    "OpenAI o1": {
+      "Python-aiohttp": {
+        "correct": 85.7,
+        "secure": 46.4
+      },
+      "Go-Fiber": {
+        "correct": 57.1,
+        "secure": 39.3
+      },
+      "Go-net/http": {
+        "correct": 78.6,
+        "secure": 39.3
+      },
+      "Go-Gin": {
+        "correct": 71.4,
+        "secure": 39.3
+      },
+      "Python-FastAPI": {
+        "correct": 85.7,
+        "secure": 39.3
+      },
+      "JavaScript-express": {
+        "correct": 78.6,
+        "secure": 35.7
+      },
+      "JavaScript-koa": {
+        "correct": 71.4,
+        "secure": 32.1
+      },
+      "JavaScript-fastify": {
+        "correct": 60.7,
+        "secure": 32.1
+      },
+      "Python-Flask": {
+        "correct": 67.9,
+        "secure": 32.1
+      },
+      "Ruby-Rails": {
+        "correct": 57.1,
+        "secure": 32.1
+      },
+      "Python-Django": {
+        "correct": 53.6,
+        "secure": 25.0
+      },
+      "JavaScript-nest": {
+        "correct": 42.9,
+        "secure": 17.9
+      },
+      "Rust-Actix": {
+        "correct": 32.1,
+        "secure": 14.3
+      },
+      "PHP-Lumen": {
+        "correct": 28.6,
+        "secure": 10.7
+      }
+    },
+    "GPT-4o": {
+      "Python-aiohttp": {
+        "correct": 75.4,
+        "secure": 31.1
+      },
+      "Go-Fiber": {
+        "correct": 55.0,
+        "secure": 36.4
+      },
+      "Go-net/http": {
+        "correct": 46.1,
+        "secure": 25.7
+      },
+      "Go-Gin": {
+        "correct": 55.4,
+        "secure": 36.1
+      },
+      "Python-FastAPI": {
+        "correct": 59.3,
+        "secure": 26.4
+      },
+      "JavaScript-express": {
+        "correct": 66.8,
+        "secure": 30.4
+      },
+      "JavaScript-koa": {
+        "correct": 35.4,
+        "secure": 11.4
+      },
+      "JavaScript-fastify": {
+        "correct": 12.5,
+        "secure": 3.9
+      },
+      "Python-Flask": {
+        "correct": 71.1,
+        "secure": 36.8
+      },
+      "Ruby-Rails": {
+        "correct": 21.8,
+        "secure": 16.8
+      },
+      "Python-Django": {
+        "correct": 42.5,
+        "secure": 19.6
+      },
+      "JavaScript-nest": {
+        "correct": 35.4,
+        "secure": 18.2
+      },
+      "Rust-Actix": {
+        "correct": 21.1,
+        "secure": 5.4
+      },
+      "PHP-Lumen": {
+        "correct": 26.1,
+        "secure": 11.4
+      }
+    },
+    "DeepSeek V3": {
+      "Python-aiohttp": {
+        "correct": 64.6,
+        "secure": 33.2
+      },
+      "Go-Fiber": {
+        "correct": 46.1,
+        "secure": 32.1
+      },
+      "Go-net/http": {
+        "correct": 52.9,
+        "secure": 25.0
+      },
+      "Go-Gin": {
+        "correct": 54.6,
+        "secure": 29.6
+      },
+      "Python-FastAPI": {
+        "correct": 38.6,
+        "secure": 25.0
+      },
+      "JavaScript-express": {
+        "correct": 64.6,
+        "secure": 30.0
+      },
+      "JavaScript-koa": {
+        "correct": 32.5,
+        "secure": 5.7
+      },
+      "JavaScript-fastify": {
+        "correct": 24.3,
+        "secure": 4.6
+      },
+      "Python-Flask": {
+        "correct": 63.9,
+        "secure": 37.5
+      },
+      "Ruby-Rails": {
+        "correct": 8.9,
+        "secure": 5.0
+      },
+      "Python-Django": {
+        "correct": 43.2,
+        "secure": 19.6
+      },
+      "JavaScript-nest": {
+        "correct": 32.1,
+        "secure": 9.3
+      },
+      "Rust-Actix": {
+        "correct": 20.0,
+        "secure": 6.8
+      },
+      "PHP-Lumen": {
+        "correct": 17.5,
+        "secure": 7.5
+      }
+    },
+    "Codestral": {
+      "Python-aiohttp": {
+        "correct": 49.6,
+        "secure": 24.3
+      },
+      "Go-Fiber": {
+        "correct": 47.5,
+        "secure": 26.8
+      },
+      "Go-net/http": {
+        "correct": 37.1,
+        "secure": 17.9
+      },
+      "Go-Gin": {
+        "correct": 44.3,
+        "secure": 23.9
+      },
+      "Python-FastAPI": {
+        "correct": 35.4,
+        "secure": 13.2
+      },
+      "JavaScript-express": {
+        "correct": 45.0,
+        "secure": 17.5
+      },
+      "JavaScript-koa": {
+        "correct": 12.9,
+        "secure": 2.5
+      },
+      "JavaScript-fastify": {
+        "correct": 8.9,
+        "secure": 1.8
+      },
+      "Python-Flask": {
+        "correct": 49.6,
+        "secure": 27.5
+      },
+      "Ruby-Rails": {
+        "correct": 2.9,
+        "secure": 2.5
+      },
+      "Python-Django": {
+        "correct": 8.9,
+        "secure": 6.4
+      },
+      "JavaScript-nest": {
+        "correct": 25.7,
+        "secure": 12.5
+      },
+      "Rust-Actix": {
+        "correct": 11.8,
+        "secure": 1.8
+      },
+      "PHP-Lumen": {
+        "correct": 17.5,
+        "secure": 12.5
+      }
+    },
+    "Qwen2.5 Coder": {
+      "Python-aiohttp": {
+        "correct": 52.1,
+        "secure": 25.4
+      },
+      "Go-Fiber": {
+        "correct": 35.4,
+        "secure": 20.0
+      },
+      "Go-net/http": {
+        "correct": 28.2,
+        "secure": 12.9
+      },
+      "Go-Gin": {
+        "correct": 27.5,
+        "secure": 13.2
+      },
+      "Python-FastAPI": {
+        "correct": 19.3,
+        "secure": 7.9
+      },
+      "JavaScript-express": {
+        "correct": 51.8,
+        "secure": 25.7
+      },
+      "JavaScript-koa": {
+        "correct": 16.1,
+        "secure": 3.6
+      },
+      "JavaScript-fastify": {
+        "correct": 22.5,
+        "secure": 10.0
+      },
+      "Python-Flask": {
+        "correct": 48.9,
+        "secure": 23.2
+      },
+      "Ruby-Rails": {
+        "correct": 4.6,
+        "secure": 2.1
+      },
+      "Python-Django": {
+        "correct": 25.0,
+        "secure": 8.9
+      },
+      "JavaScript-nest": {
+        "correct": 9.6,
+        "secure": 4.6
+      },
+      "Rust-Actix": {
+        "correct": 10.4,
+        "secure": 3.9
+      },
+      "PHP-Lumen": {
+        "correct": 0.0,
+        "secure": 0.0
+      }
+    },
+    "Llama 3.3 70B": {
+      "Python-aiohttp": {
+        "correct": 28.6,
+        "secure": 12.5
+      },
+      "Go-Fiber": {
+        "correct": 22.9,
+        "secure": 11.8
+      },
+      "Go-net/http": {
+        "correct": 26.4,
+        "secure": 9.3
+      },
+      "Go-Gin": {
+        "correct": 29.3,
+        "secure": 13.2
+      },
+      "Python-FastAPI": {
+        "correct": 33.9,
+        "secure": 10.7
+      },
+      "JavaScript-express": {
+        "correct": 48.9,
+        "secure": 26.8
+      },
+      "JavaScript-koa": {
+        "correct": 16.1,
+        "secure": 3.9
+      },
+      "JavaScript-fastify": {
+        "correct": 13.9,
+        "secure": 2.9
+      },
+      "Python-Flask": {
+        "correct": 51.1,
+        "secure": 23.6
+      },
+      "Ruby-Rails": {
+        "correct": 3.2,
+        "secure": 1.1
+      },
+      "Python-Django": {
+        "correct": 0.7,
+        "secure": 0.0
+      },
+      "JavaScript-nest": {
+        "correct": 18.2,
+        "secure": 6.1
+      },
+      "Rust-Actix": {
+        "correct": 13.2,
+        "secure": 5.7
+      },
+      "PHP-Lumen": {
+        "correct": 1.8,
+        "secure": 1.1
+      }
+    },
+    "Qwen2.5 72B": {
+      "Python-aiohttp": {
+        "correct": 37.1,
+        "secure": 20.7
+      },
+      "Go-Fiber": {
+        "correct": 26.1,
+        "secure": 15.4
+      },
+      "Go-net/http": {
+        "correct": 21.8,
+        "secure": 11.1
+      },
+      "Go-Gin": {
+        "correct": 21.4,
+        "secure": 10.7
+      },
+      "Python-FastAPI": {
+        "correct": 36.8,
+        "secure": 18.2
+      },
+      "JavaScript-express": {
+        "correct": 42.5,
+        "secure": 17.9
+      },
+      "JavaScript-koa": {
+        "correct": 11.8,
+        "secure": 0.7
+      },
+      "JavaScript-fastify": {
+        "correct": 9.3,
+        "secure": 1.4
+      },
+      "Python-Flask": {
+        "correct": 45.7,
+        "secure": 18.2
+      },
+      "Ruby-Rails": {
+        "correct": 1.4,
+        "secure": 0.0
+      },
+      "Python-Django": {
+        "correct": 2.9,
+        "secure": 2.1
+      },
+      "JavaScript-nest": {
+        "correct": 11.4,
+        "secure": 5.0
+      },
+      "Rust-Actix": {
+        "correct": 5.4,
+        "secure": 0.4
+      },
+      "PHP-Lumen": {
+        "correct": 1.4,
+        "secure": 1.4
+      }
+    },
+    "Qwen2.5 7B": {
+      "Python-aiohttp": {
+        "correct": 15.0,
+        "secure": 5.4
+      },
+      "Go-Fiber": {
+        "correct": 0.7,
+        "secure": 0.4
+      },
+      "Go-net/http": {
+        "correct": 0.7,
+        "secure": 0.7
+      },
+      "Go-Gin": {
+        "correct": 3.9,
+        "secure": 2.1
+      },
+      "Python-FastAPI": {
+        "correct": 10.0,
+        "secure": 5.4
+      },
+      "JavaScript-express": {
+        "correct": 11.4,
+        "secure": 5.0
+      },
+      "JavaScript-koa": {
+        "correct": 4.6,
+        "secure": 2.1
+      },
+      "JavaScript-fastify": {
+        "correct": 2.9,
+        "secure": 0.0
+      },
+      "Python-Flask": {
+        "correct": 22.9,
+        "secure": 7.5
+      },
+      "Ruby-Rails": {
+        "correct": 0.0,
+        "secure": 0.0
+      },
+      "Python-Django": {
+        "correct": 3.6,
+        "secure": 2.1
+      },
+      "JavaScript-nest": {
+        "correct": 0.7,
+        "secure": 0.4
+      },
+      "Rust-Actix": {
+        "correct": 0.0,
+        "secure": 0.0
+      },
+      "PHP-Lumen": {
+        "correct": 0.0,
+        "secure": 0.0
+      }
+    }
+  }
+}

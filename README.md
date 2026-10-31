@@ -91,7 +91,23 @@ test log.
 
 ## Evaluation report
 
-Coming soon: results for two models, compared with the paper.
+Results on all 392 tasks, with the default settings (OpenAPI spec, no security
+reminder), compared with the paper's published numbers (arXiv v3, Figure 3):
+
+| Model | Correct (ours) | Correct (paper) | Secure (ours) | Secure (paper) |
+|---|---|---|---|---|
+| DeepSeek V3 (`openrouter/deepseek/deepseek-chat`) | 39.5% ± 4.8 | 40.3% | 21.2% ± 4.0 | 19.4% |
+
+± is a 95% confidence half-width. Per-framework results, all 14 within their
+confidence intervals of the paper's: [docs/results/deepseek-v3.md](docs/results/deepseek-v3.md).
+
+Run on 30-31 Oct 2026 with Inspect 0.3.285, 1 epoch at temperature 0.2. The paper
+used 10 samples at temperature 0.4 (its README's commands) where upstream's code
+defaults to 5 samples at 0.2, which we follow; the hosted model may also not be
+the paper's exact checkpoint. The paper's numbers are read from the bar heights of
+its figures by [extract_paper_results.py](scripts/extract_paper_results.py), into
+[docs/paper_results.json](docs/paper_results.json); compare a log with
+[compare_with_paper.py](scripts/compare_with_paper.py).
 
 ## Differences from upstream
 
