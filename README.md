@@ -96,23 +96,28 @@ reminder), compared with the paper's published numbers (arXiv v3, Figure 3):
 
 | Model | Correct (ours) | Correct (paper) | Secure (ours) | Secure (paper) |
 |---|---|---|---|---|
-| DeepSeek V3 (`openrouter/deepseek/deepseek-chat`) | 39.5% ± 4.8 | 40.3% | 21.2% ± 4.0 | 19.4% |
-| Llama 3.3 70B (`openrouter/meta-llama/llama-3.3-70b-instruct`) | 17.6% ± 3.8 | 22.0% | 9.7% ± 2.9 | 9.2% |
+| DeepSeek V3 (`openrouter/deepseek/deepseek-chat`) | 39.5% (34.8-44.5) | 40.3% | 19.1% (15.5-23.3) | 19.4% |
+| Llama 3.3 70B (`openrouter/meta-llama/llama-3.3-70b-instruct`) | 18.1% (14.6-22.2) | 22.0% | 8.9% (6.5-12.2) | 9.2% |
 
-± is a 95% confidence half-width. Per-framework results:
-[DeepSeek V3](docs/results/deepseek-v3.md) (all 14 frameworks within their
-intervals of the paper's) and [Llama 3.3 70B](docs/results/llama-3.3-70b.md)
-(12 of 14, with Go-Gin and Flask lower).
+Ranges are 95% Wilson intervals for our rates. The paper's value is inside them for
+both metrics and both models, and in 55 of 56 per-framework comparisons
+([DeepSeek V3](docs/results/deepseek-v3.md), [Llama 3.3 70B](docs/results/llama-3.3-70b.md));
+at 95%, about three misses would be expected by chance.
 
-Security matches the paper for both models. Llama's correctness is 4.4 points below
-the paper's, just outside the interval. The paper served Llama from Together's
-FP8 "Turbo" endpoint, which OpenRouter doesn't offer; our requests went to 8
-providers with different quantisations (bf16, fp8 and fp16). Among the four that
-served at least 30 requests, correct rates ranged from 10% to 27%. Every failure we inspected was the model's own: syntax
-errors, modules that aren't installed (e.g. `import pyjwt`), and aiohttp servers
-that exit as soon as they start.
+Llama's correctness is the weakest match, at the edge of the interval. The paper
+served Llama from Together's FP8 "Turbo" endpoint, which OpenRouter doesn't offer;
+our requests went to 8 providers with different quantisations (bf16, fp8 and
+fp16), and among the four that served at least 30 requests, correct rates ranged
+from 10% to 27%. Every failure we inspected was the model's own: syntax errors,
+modules that aren't installed (e.g. `import pyjwt`), and aiohttp servers that exit
+as soon as they start.
 
-Runs on 30-31 Oct 2026 with Inspect 0.3.285, 1 epoch at temperature 0.2. The paper
+Generation ran on 30-31 Oct 2026 and the logs were rescored on 1 Nov after the
+Windows database fix (see below), which found 16 and 6 more CWE-522 cases. A few
+outcomes also changed between scorings without a code change, e.g. a test whose
+connection was reset: tests talk to live servers, so expect small run-to-run noise.
+
+Settings: Inspect 0.3.285, 1 epoch at temperature 0.2. The paper
 used 10 samples at temperature 0.4 (its README's commands) where upstream's code
 defaults to 5 samples at 0.2, which we follow; the hosted model may also not be
 the paper's exact checkpoint. The paper's numbers are read from the bar heights of
